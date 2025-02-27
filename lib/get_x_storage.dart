@@ -1,23 +1,36 @@
-library;
-
 import 'dart:async';
 
 import 'package:get_x_storage/src/storage/storage_base.dart';
 import 'package:get_x_storage/src/storage/storage_factory.dart';
 
-/// A class for managing storage using GetX pattern.
-/// This class provides a simple and efficient way to store, retrieve, and manage data
-/// in a key-value format. It supports asynchronous initialization, listening to changes,
-/// and various CRUD operations.
-
+/// A class for managing persistent storage using the GetX pattern.
+/// This class provides a simple, efficient interface to store, retrieve, and manage data
+/// in a key-value format. It supports asynchronous initialization, real-time change listening,
+/// and basic CRUD operations (create, read, update, delete).
+///
+/// Example usage:
+/// ```dart
+/// void main() async {
+///   final storage = GetXStorage('UserPreferences');
+///   await storage.init(); // Initialize the storage
+///   await storage.write(key: 'username', value: 'Alice'); // Save a value
+///   print(storage.read<String>(key: 'username')); // Prints: Alice
+///   storage.listen(() => print('Data changed!')); // Listen for changes
+/// }
+/// ```
 class GetXStorage {
-  /// Factory constructor to create or retrieve an instance of GetXStorage.
-  /// If an instance with the same container name already exists, it returns that instance.
-  /// Otherwise, it creates a new instance and stores it in the `_sync` map.
+  /// Factory constructor to create or retrieve a [GetXStorage] instance.
+  /// Ensures singleton behavior: if an instance with the same [container] name exists,
+  /// it returns that instance; otherwise, it creates a new one and stores it in [_sync].
   ///
-  /// [container]: The name of the storage container. Defaults to 'GetStorage'.
-  /// [path]: Optional path for the storage.
-  /// [initialData]: Optional initial data to initialize the storage with.
+  /// [container] The unique identifier for this storage instance. Defaults to 'GetStorage'.
+  /// [path] Optional path for storage location (e.g., custom directory for file-based storage).
+  /// [initialData] Optional initial key-value pairs to populate the storage.
+  ///
+  /// Example:
+  /// ```dart
+  /// final storage = GetXStorage('Settings', initialData: {'theme': 'dark'});
+  /// ```
   factory GetXStorage([
     String container = 'GetStorage',
     String? path,
@@ -32,8 +45,9 @@ class GetXStorage {
     }
   }
 
-  /// Internal constructor to initialize the storage instance.
-  /// This constructor is private and should only be called from the factory constructor.
+  /// Private constructor to initialize a new [GetXStorage] instance.
+  /// Configures the underlying storage implementation and prepares it for use.
+  /// Should only be called by the factory constructor.
   GetXStorage._internal(
     String key, [
     String? path,
@@ -41,48 +55,122 @@ class GetXStorage {
   ]) {
     _concrete = StorageFactory.create(key, path);
     initStorage = Future<bool>(() async {
-      await _concrete.init(initialData);
-      return true;
+      try {
+        await _concrete.init(initialData);
+        return true;
+      } catch (e) {
+        throw Exception('Initialization failed: $e');
+      }
     });
   }
 
-  /// A map to store instances of GetXStorage with their container names as keys.
+  /// A static map storing all [GetXStorage] instances by their container names.
+  /// Prevents duplicate instances for the same container.
   static final Map<String, GetXStorage> _sync = {};
 
-  /// The concrete storage implementation.
-  late StorageBase _concrete;
+  /// The concrete storage implementation (e.g., [IOStorage] or [WebStorage]).
+  late final StorageBase _concrete;
 
-  /// A future that completes when the storage is initialized.
-  late Future<bool> initStorage;
+  /// A future indicating whether storage initialization was successful.
+  /// Resolves to `true` on success, `false` on failure.
+  late final Future<bool> initStorage;
 
-  /// A stream that emits the current state of the storage as a map.
+  /// A stream that emits the current state of the storage as a map whenever it changes.
+  /// Useful for reactive updates in UI or logic.
+  ///
+  /// Example:
+  /// ```dart
+  /// storage.stream.listen((data) => print('Current storage: $data'));
+  /// ```
   Stream<Map<String, dynamic>> get stream => _concrete.subject.stream;
 
-  /// Initializes the storage for a given container.
-  /// Returns a future that completes when the storage is ready.
+  /// Initializes the storage for a specific [container].
+  /// Returns a future that resolves to `true` if initialization succeeds, `false` otherwise.
+  ///
+  /// [container] The name of the storage container to initialize.
+  ///
+  /// Example:
+  /// ```dart
+  /// bool success = await GetXStorage.init('AppData');
+  /// if (success) print('Storage ready!');
+  /// ```
   static Future<bool> init([String container = 'GetStorage']) {
     return GetXStorage(container).initStorage;
   }
 
-  /// Reads a value from the storage by its key.
-  /// Returns `null` if the key does not exist.
+  /// Reads a value from the storage by its [key].
+  /// Returns `null` if the key doesn't exist or the type [T] doesn't match the stored value.
+  ///
+  /// [key] The key to look up in the storage.
+  ///
+  /// Example:
+  /// ```dart
+  /// final name = storage.read<String>(key: 'username');
+  /// print(name ?? 'No user found'); // Prints: Alice (or "No user found" if not set)
+  /// ```
   T? read<T>({required String key}) => _concrete.read<T>(key: key);
 
-  /// Returns an iterable of all keys in the storage.
+  /// Returns an iterable of all keys currently stored in the storage.
+  /// Useful for inspecting or iterating over stored data.
+  ///
+  /// Example:
+  /// ```dart
+  /// final keys = storage.getKeys();
+  /// print('Stored keys: $keys'); // Prints: (username, age)
+  /// ```
   Iterable<String> getKeys() => _concrete.getKeys();
 
-  /// Returns an iterable of all values in the storage.
+  /// Returns an iterable of all values currently stored in the storage.
+  /// Useful for bulk retrieval of data.
+  ///
+  /// Example:
+  /// ```dart
+  /// final values = storage.getValues();
+  /// print('Stored values: $values'); // Prints: (Alice, 25)
+  /// ```
   Iterable<dynamic> getValues() => _concrete.getValues();
 
-  /// Checks if the storage contains data for a given key.
+  /// Checks if the storage contains data for the specified [key].
+  /// Returns `true` if the key exists and has a non-null value, `false` otherwise.
+  ///
+  /// Example:
+  /// ```dart
+  /// if (storage.hasData(key: 'email')) {
+  ///   print('Email is set!');
+  /// }
+  /// ```
   bool hasData({required String key}) => read(key: key) != null;
 
-  /// Listens to changes in the storage and invokes the callback whenever a change occurs.
+  /// Listens to any changes in the storage and invokes the [callback] when they occur.
+  /// Returns a [StreamSubscription] that can be cancelled to stop listening.
+  ///
+  /// Example:
+  /// ```dart
+  /// final subscription = storage.listen(() {
+  ///   print('Something changed in storage!');
+  /// });
+  /// // Later, to stop listening:
+  /// subscription.cancel();
+  /// ```
   StreamSubscription? listen(void Function() callback) {
     return _concrete.subject.stream.listen((_) => callback());
   }
 
-  /// Listens to changes for a specific key and invokes the callback with the new value.
+  /// Listens to changes for a specific [key] and invokes the [callback] with the new value.
+  /// Only emits when the value changes and is non-null, avoiding duplicate events.
+  ///
+  /// [key] The key to monitor for changes.
+  /// [callback] The function to call with the updated value.
+  ///
+  /// Example:
+  /// ```dart
+  /// final subscription = storage.listenKey(
+  ///   key: 'score',
+  ///   callback: (value) => print('New score: $value'),
+  /// );
+  /// await storage.write(key: 'score', value: 100); // Prints: New score: 100
+  /// subscription.cancel();
+  /// ```
   StreamSubscription listenKey({
     required String key,
     required void Function(dynamic) callback,
@@ -94,12 +182,36 @@ class GetXStorage {
         .listen(callback);
   }
 
-  /// Writes a value to the storage for a given key.
+  /// Writes a [value] to the storage under the specified [key].
+  /// Overwrites any existing value for that key.
+  ///
+  /// [key] The key to associate with the value.
+  /// [value] The data to store (can be any type).
+  ///
+  /// Example:
+  /// ```dart
+  /// await storage.write(key: 'age', value: 25);
+  /// print(storage.read<int>(key: 'age')); // Prints: 25
+  /// ```
   Future<void> write({required String key, required dynamic value}) async {
-    await _concrete.write(key: key, value: value);
+    try {
+      await _concrete.write(key: key, value: value);
+    } catch (e) {
+      throw Exception('Failed to write to storage: $e');
+    }
   }
 
-  /// Writes a value to the storage only if the key does not already exist.
+  /// Writes a [value] to the storage only if the [key] does not already exist.
+  /// Useful for setting default values without overwriting existing data.
+  ///
+  /// [key] The key to check and potentially write to.
+  /// [value] The data to store if the key is empty.
+  ///
+  /// Example:
+  /// ```dart
+  /// await storage.writeIfNull(key: 'theme', value: 'light');
+  /// print(storage.read<String>(key: 'theme')); // Prints: light (if not set before)
+  /// ```
   Future<void> writeIfNull({
     required String key,
     required dynamic value,
@@ -108,18 +220,68 @@ class GetXStorage {
     await write(key: key, value: value);
   }
 
-  /// Removes a value from the storage by its key.
+  /// Removes the value associated with the specified [key] from the storage.
+  /// Does nothing if the key doesn't exist.
+  ///
+  /// [key] The key to remove from the storage.
+  ///
+  /// Example:
+  /// ```dart
+  /// await storage.write(key: 'temp', value: 'data');
+  /// await storage.remove(key: 'temp');
+  /// print(storage.read<String>(key: 'temp')); // Prints: null
+  /// ```
   Future<void> remove({required String key}) async {
-    await _concrete.remove(key: key);
+    try {
+      await _concrete.remove(key: key);
+    } catch (e) {
+      throw Exception('Failed to remove from storage: $e');
+    }
   }
 
-  /// Clears all data from the storage.
+  /// Clears all data from the storage, resetting it to an empty state.
+  ///
+  /// Example:
+  /// ```dart
+  /// await storage.write(key: 'key1', value: 'value1');
+  /// await storage.erase();
+  /// print(storage.getKeys().isEmpty); // Prints: true
+  /// ```
   Future<void> erase() async {
-    await _concrete.clear();
+    try {
+      await _concrete.clear();
+    } catch (e) {
+      throw Exception('Failed to erase storage: $e');
+    }
   }
 
-  /// Updates the value of a specific key in the storage.
+  /// Updates the value of a specific [key] in the storage without awaiting persistence.
+  /// Faster than [write] for in-memory updates; persistence depends on the implementation.
+  ///
+  /// [key] The key to update.
+  /// [newValue] The new value to set.
+  ///
+  /// Example:
+  /// ```dart
+  /// storage.changeValueOfKey(key: 'counter', newValue: 42);
+  /// print(storage.read<int>(key: 'counter')); // Prints: 42
+  /// ```
   void changeValueOfKey({required String key, required dynamic newValue}) {
     _concrete.changeValueOfKey(key: key, newValue: newValue);
+  }
+
+  /// Disposes of the storage instance, closing streams and freeing resources.
+  /// Call this when the storage is no longer needed to prevent memory leaks.
+  ///
+  /// Example:
+  /// ```dart
+  /// final storage = GetXStorage('Temp');
+  /// await storage.init();
+  /// // Use storage...
+  /// storage.dispose(); // Clean up when done
+  /// ```
+  void dispose() {
+    _concrete.subject.close();
+    _sync.removeWhere((k, v) => v == this);
   }
 }

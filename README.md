@@ -261,7 +261,5 @@ Contributions are welcome! Please:
 2. Create a feature branch.
 3. Submit a pull request with your changes.
 
-## License
 
-[MIT License](LICENSE)
 

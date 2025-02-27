@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:html' as html;
 
 import 'package:get_x_storage/src/storage/storage_base.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:web/web.dart' as web;
 
 /// A class that implements the `StorageBase` interface for web-based storage.
 /// This class uses the browser's `localStorage` to store and manage data in a key-value format.
@@ -21,7 +21,7 @@ class WebStorage implements StorageBase {
   final String? path;
 
   /// The browser's `localStorage` instance used for storing data.
-  final html.Storage _localStorage = html.window.localStorage;
+  final web.Storage _localStorage = web.window.localStorage;
 
   /// A `BehaviorSubject` that holds the current state of the storage as a map.
   /// It is seeded with an empty map by default.
@@ -69,7 +69,7 @@ class WebStorage implements StorageBase {
   @override
   Future<void> clear() async {
     subject.add({});
-    _localStorage.remove(fileName);
+    _localStorage.removeItem(fileName);
   }
 
   /// Returns an iterable of all keys in the storage.
