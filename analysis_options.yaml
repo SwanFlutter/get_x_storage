@@ -1,0 +1,8 @@
+include: package:flutter_lints/flutter.yaml
+analyzer:
+  errors:
+    deprecated_member_use: ignore
+    avoid_web_libraries_in_flutter: ignore
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options
