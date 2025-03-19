@@ -33,7 +33,11 @@ class GetXStorage {
   /// Example:
   /// ```dart
   /// final storage = GetXStorage('Settings', initialData: {'theme': 'dark'});
+  ///
+  ///
   /// ```
+  ///
+  ///
   factory GetXStorage([String container = 'GetStorage', String? path, Map<String, dynamic>? initialData]) {
     if (_sync.containsKey(container)) {
       return _sync[container]!;
@@ -88,6 +92,8 @@ class GetXStorage {
   /// ```dart
   /// bool success = await GetXStorage.init('AppData');
   /// if (success) print('Storage ready!');
+  ///
+  ///
   /// ```
   static Future<bool> init([String container = 'GetStorage']) {
     return GetXStorage(container).initStorage;
@@ -112,6 +118,8 @@ class GetXStorage {
   /// ```dart
   /// final keys = storage.getKeys();
   /// print('Stored keys: $keys'); // Prints: (username, age)
+  ///
+  ///
   /// ```
   Iterable<String> getKeys() => _concrete.getKeys();
 
@@ -122,6 +130,8 @@ class GetXStorage {
   /// ```dart
   /// final values = storage.getValues();
   /// print('Stored values: $values'); // Prints: (Alice, 25)
+  ///
+  ///
   /// ```
   Iterable<dynamic> getValues() => _concrete.getValues();
 
@@ -133,6 +143,8 @@ class GetXStorage {
   /// if (storage.hasData(key: 'email')) {
   ///   print('Email is set!');
   /// }
+  ///
+  ///
   /// ```
   bool hasData({required String key}) => read(key: key) != null;
 
@@ -146,6 +158,8 @@ class GetXStorage {
   /// });
   /// // Later, to stop listening:
   /// subscription.cancel();
+  ///
+  ///
   /// ```
   StreamSubscription? listen(void Function() callback) {
     return _concrete.subject.stream.listen((_) => callback());
@@ -165,6 +179,8 @@ class GetXStorage {
   /// );
   /// await storage.write(key: 'score', value: 100); // Prints: New score: 100
   /// subscription.cancel();
+  ///
+  ///
   /// ```
   StreamSubscription listenKey({required String key, required void Function(dynamic) callback}) {
     return _concrete.subject.stream.map((map) => map[key]).where((value) => value != null).distinct().listen(callback);
@@ -180,6 +196,8 @@ class GetXStorage {
   /// ```dart
   /// await storage.write(key: 'age', value: 25);
   /// print(storage.read<int>(key: 'age')); // Prints: 25
+  ///
+  ///
   /// ```
   Future<void> write({required String key, required dynamic value}) async {
     try {
@@ -199,6 +217,8 @@ class GetXStorage {
   /// ```dart
   /// await storage.writeIfNull(key: 'theme', value: 'light');
   /// print(storage.read<String>(key: 'theme')); // Prints: light (if not set before)
+  ///
+  ///
   /// ```
   Future<void> writeIfNull({required String key, required dynamic value}) async {
     if (hasData(key: key)) return;
@@ -215,6 +235,8 @@ class GetXStorage {
   /// await storage.write(key: 'temp', value: 'data');
   /// await storage.remove(key: 'temp');
   /// print(storage.read<String>(key: 'temp')); // Prints: null
+  ///
+  ///
   /// ```
   Future<void> remove({required String key}) async {
     try {
@@ -265,6 +287,8 @@ class GetXStorage {
   /// ```dart
   /// storage.changeValueOfKey(key: 'counter', newValue: 42);
   /// print(storage.read<int>(key: 'counter')); // Prints: 42
+  ///
+  ///
   /// ```
   void changeValueOfKey({required String key, required dynamic newValue}) {
     _concrete.changeValueOfKey(key: key, newValue: newValue);
@@ -279,6 +303,8 @@ class GetXStorage {
   /// await storage.init();
   /// // Use storage...
   /// storage.dispose(); // Clean up when done
+  ///
+  ///
   /// ```
   void dispose() {
     _concrete.subject.close();
