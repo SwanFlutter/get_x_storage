@@ -27,7 +27,9 @@ class StorageFactory {
       // Use IOStorage for all non-web platforms
       return IOStorage(key, path);
     } catch (e) {
-      throw UnsupportedError('Failed to create storage for platform: ${kIsWeb ? 'web' : Platform.operatingSystem}\nError: $e');
+      throw UnsupportedError(
+        'Failed to create storage for platform: ${kIsWeb ? 'web' : Platform.operatingSystem}\nError: $e',
+      );
     }
   }
 

@@ -34,11 +34,7 @@ class GetXStorage {
   /// ```dart
   /// final storage = GetXStorage('Settings', initialData: {'theme': 'dark'});
   /// ```
-  factory GetXStorage([
-    String container = 'GetStorage',
-    String? path,
-    Map<String, dynamic>? initialData,
-  ]) {
+  factory GetXStorage([String container = 'GetStorage', String? path, Map<String, dynamic>? initialData]) {
     if (_sync.containsKey(container)) {
       return _sync[container]!;
     } else {
@@ -51,11 +47,7 @@ class GetXStorage {
   /// Private constructor to initialize a new [GetXStorage] instance.
   /// Configures the underlying storage implementation and prepares it for use.
   /// Should only be called by the factory constructor.
-  GetXStorage._internal(
-    String key, [
-    String? path,
-    Map<String, dynamic>? initialData,
-  ]) {
+  GetXStorage._internal(String key, [String? path, Map<String, dynamic>? initialData]) {
     _concrete = StorageFactory.create(key, path);
     initStorage = Future<bool>(() async {
       try {
@@ -174,15 +166,8 @@ class GetXStorage {
   /// await storage.write(key: 'score', value: 100); // Prints: New score: 100
   /// subscription.cancel();
   /// ```
-  StreamSubscription listenKey({
-    required String key,
-    required void Function(dynamic) callback,
-  }) {
-    return _concrete.subject.stream
-        .map((map) => map[key])
-        .where((value) => value != null)
-        .distinct()
-        .listen(callback);
+  StreamSubscription listenKey({required String key, required void Function(dynamic) callback}) {
+    return _concrete.subject.stream.map((map) => map[key]).where((value) => value != null).distinct().listen(callback);
   }
 
   /// Writes a [value] to the storage under the specified [key].
@@ -215,10 +200,7 @@ class GetXStorage {
   /// await storage.writeIfNull(key: 'theme', value: 'light');
   /// print(storage.read<String>(key: 'theme')); // Prints: light (if not set before)
   /// ```
-  Future<void> writeIfNull({
-    required String key,
-    required dynamic value,
-  }) async {
+  Future<void> writeIfNull({required String key, required dynamic value}) async {
     if (hasData(key: key)) return;
     await write(key: key, value: value);
   }
@@ -256,6 +238,21 @@ class GetXStorage {
     } catch (e) {
       throw Exception('Failed to erase storage: $e');
     }
+  }
+
+  /// Clears all data from the storage, resetting it to an empty state.
+  /// This is an alias for [erase] method.
+  ///
+  /// Example:
+  /// ```dart
+  /// await storage.write(key: 'key1', value: 'value1');
+  /// await storage.clear();
+  /// print(storage.getKeys().isEmpty); // Prints: true
+  ///
+  ///
+  /// ```
+  Future<void> clear() async {
+    await erase();
   }
 
   /// Updates the value of a specific [key] in the storage without awaiting persistence.
