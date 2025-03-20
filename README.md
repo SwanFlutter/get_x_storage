@@ -11,6 +11,7 @@
 - 🔄 **Reactive Updates**: Built-in support for real-time updates via GetX.
 - 🔒 **Type-Safe**: Ensures safe read and write operations with generic types.
 - 🧩 **Simple API**: Easy-to-use methods for common storage tasks.
+- 🔐 **Encryption Support**: Secure your sensitive data with built-in encryption capabilities.
 
 ## Installation
 
