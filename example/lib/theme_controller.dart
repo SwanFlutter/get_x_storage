@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get_x_master/get_x_master.dart';
 import 'package:get_x_storage/get_x_storage.dart';
 
-// استفاده از پکیج اصلی get
-
 class ThemeController extends GetXController {
   final _storage = GetXStorage();
   final _key = 'isDarkMode';

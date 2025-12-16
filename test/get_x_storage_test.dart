@@ -148,7 +148,8 @@ Future<File> _fileDb({
 }) async {
   final dir = await getApplicationDocumentsDirectory();
   final path = dir.path;
-  final file =
-      isBackup ? File('$path/$fileName.bak') : File('$path/$fileName.gs');
+  final file = isBackup
+      ? File('$path/$fileName.bak')
+      : File('$path/$fileName.gs');
   return file;
 }
