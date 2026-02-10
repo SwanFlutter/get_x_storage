@@ -19,7 +19,7 @@ Add `get_x_storage` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  get_x_storage: ^0.0.9
+  get_x_storage: ^0.1.0
 ```
 
 Then run:

@@ -1,3 +1,13 @@
+## 0.1.0
+
+* **BREAKING CHANGE**: Migrated from deprecated `dart:html` to modern `package:web` for web platform support
+* Fixed web storage persistence issues - data now saves correctly using `package:web` API
+* Improved web storage implementation with proper `localStorage.setItem()` and `getItem()` methods
+* Removed all debug print statements for cleaner production code
+* Enhanced web storage reliability and compatibility with latest Flutter SDK
+* Fixed theme persistence in web applications
+* All tests passing with new web implementation
+
 ## 0.0.9
 
 * **BREAKING CHANGE**: Removed `path_provider` dependency to fix Android NDK Clang build errors

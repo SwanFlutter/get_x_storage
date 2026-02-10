@@ -6,7 +6,8 @@ class ThemeController extends GetXController {
   final _storage = GetXStorage();
   final _key = 'isDarkMode';
 
-  late RxBool isDarkMode;
+  // Initialize with default value to avoid late initialization issues
+  final isDarkMode = false.obs;
 
   ThemeMode get themeMode =>
       isDarkMode.value ? ThemeMode.dark : ThemeMode.light;
@@ -14,31 +15,23 @@ class ThemeController extends GetXController {
   @override
   void onInit() {
     super.onInit();
-    _initTheme();
+    _loadTheme();
   }
 
-  void _initTheme() {
-    // Read the stored theme value SYNCHRONOUSLY to avoid flicker
-    // This is critical for web where localStorage is synchronous
+  void _loadTheme() {
+    // Always read from storage on init/hot reload
     final storedValue = _storage.read<bool>(key: _key);
 
-    // Use stored value if available, otherwise default to false (light mode)
-    final initialTheme = storedValue ?? false;
+    if (storedValue != null) {
+      isDarkMode.value = storedValue;
+    }
 
-    // Initialize the reactive variable
-    isDarkMode = initialTheme.obs;
-
-    // Apply the theme immediately
     Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
   }
 
   void toggleTheme() {
     isDarkMode.value = !isDarkMode.value;
-
-    // Change theme in the entire application
     Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
-
-    // Save the new state
     _storage.write(key: _key, value: isDarkMode.value);
   }
 }

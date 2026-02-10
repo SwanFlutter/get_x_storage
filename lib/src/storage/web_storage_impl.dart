@@ -1,81 +1,90 @@
 // This file should only be imported on web platforms
 // It provides direct access to the browser's localStorage API
-// Using universal_html for cross-platform compatibility
 
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:universal_html/html.dart' as html;
+import 'package:web/web.dart' as web;
 
 /// Web-specific implementation of localStorage access
 class WebStorageImpl {
-  // Cache for localStorage to improve performance
-  static dynamic _cachedLocalStorage;
-
-  // Flag to track if localStorage has been initialized
-  static bool _initialized = false;
-
-  /// Returns the browser's localStorage object with caching for better performance
-  static dynamic get localStorage {
-    // Return cached value if already initialized
-    if (_initialized) return _cachedLocalStorage;
-
-    // Return null for non-web platforms
+  /// Returns the browser's localStorage object without caching to avoid issues with hot reload
+  static web.Storage? get localStorage {
     if (!kIsWeb) {
-      _initialized = true;
-      _cachedLocalStorage = null;
       return null;
     }
 
     try {
-      // Initialize and cache localStorage
-      _cachedLocalStorage = html.window.localStorage;
-      _initialized = true;
-      return _cachedLocalStorage;
+      return web.window.localStorage;
     } catch (e) {
-      // Handle errors gracefully
-      _initialized = true;
-      _cachedLocalStorage = null;
       return null;
     }
   }
 
   /// Directly check if localStorage is available and working
   static bool get isAvailable {
-    // Return false for non-web platforms
     if (!kIsWeb) return false;
 
     try {
-      // Try to access localStorage and perform a test operation
-      final storage = html.window.localStorage;
+      final storage = localStorage;
+      if (storage == null) {
+        return false;
+      }
       const testKey = '__get_x_storage_test__';
 
-      // Try to write and read a test value
-      storage[testKey] = 'test';
-      final result = storage[testKey] == 'test';
-
-      // Clean up the test key
-      storage.remove(testKey);
+      storage.setItem(testKey, 'test');
+      final result = storage.getItem(testKey) == 'test';
+      storage.removeItem(testKey);
 
       return result;
     } catch (e) {
-      // If any error occurs, localStorage is not available
       return false;
     }
   }
 
   /// Synchronously read a value from localStorage
-  /// This method is optimized for performance and should be used
-  /// when immediate access to stored values is needed (e.g., theme settings)
   static String? getItemSync(String key) {
     if (!kIsWeb) return null;
 
     try {
       final storage = localStorage;
-      if (storage == null) return null;
+      if (storage == null) {
+        return null;
+      }
 
-      return storage[key] as String?;
+      return storage.getItem(key);
     } catch (e) {
-      // Handle errors gracefully
       return null;
+    }
+  }
+
+  /// Synchronously write a value to localStorage
+  static void setItemSync(String key, String value) {
+    if (!kIsWeb) return;
+
+    try {
+      final storage = localStorage;
+      if (storage == null) {
+        return;
+      }
+
+      storage.setItem(key, value);
+    } catch (e) {
+      // Silently handle errors
+    }
+  }
+
+  /// Synchronously remove a value from localStorage
+  static void removeItemSync(String key) {
+    if (!kIsWeb) return;
+
+    try {
+      final storage = localStorage;
+      if (storage == null) {
+        return;
+      }
+
+      storage.removeItem(key);
+    } catch (e) {
+      // Silently handle errors
     }
   }
 }

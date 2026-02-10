@@ -11,4 +11,10 @@ class WebStorageImpl {
 
   /// Stub implementation of getItemSync that returns null
   static String? getItemSync(String key) => null;
+
+  /// Stub implementation of setItemSync that does nothing
+  static void setItemSync(String key, String value) {}
+
+  /// Stub implementation of removeItemSync that does nothing
+  static void removeItemSync(String key) {}
 }

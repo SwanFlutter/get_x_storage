@@ -1,10 +1,9 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:get_x_storage/src/storage/storage_base.dart';
 import 'package:rxdart/rxdart.dart';
 
-import 'package:get_x_storage/src/storage/storage_base.dart';
-import 'package:get_x_storage/src/storage/web_storage.dart';
-
 import 'io_storage.dart';
+import 'web_storage.dart';
 
 /// A factory class responsible for creating storage instances based on the platform.
 class StorageFactory {

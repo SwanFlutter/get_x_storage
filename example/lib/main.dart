@@ -1,5 +1,3 @@
-// ignore_for_file: unused_local_variable
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_x_master/get_x_master.dart';
@@ -10,16 +8,15 @@ import 'theme_controller.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // CRITICAL: Initialize storage and WAIT for it to complete
-  // This ensures localStorage data is loaded before creating ThemeController
+  // Initialize storage
   await GetXStorage.init();
 
-  // Create storage instance and ensure it's initialized
+  // Create storage instance and wait for it to be ready
   final storage = GetXStorage();
   await storage.initStorage;
 
-  // Now create ThemeController - it will have access to loaded data
-  final ThemeController themeController = Get.put(ThemeController());
+  // Create ThemeController
+  Get.put(ThemeController());
 
   runApp(const MyApp());
 }

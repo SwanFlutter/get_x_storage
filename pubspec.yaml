@@ -1,6 +1,6 @@
 name: get_x_storage
 description: "GetXStorage is a lightweight and efficient persistent storage solution for Flutter applications"
-version: 0.0.9
+version: 0.1.0
 homepage: "https://github.com/SwanFlutter/get_x_storage"
 
 platforms:
@@ -21,7 +21,7 @@ dependencies:
   rxdart: ^0.28.0
   synchronized: ^3.4.0
   crypto: ^3.0.7
-  universal_html: ^2.3.0
+  web: ^1.1.0
 
 dev_dependencies:
   flutter_test:
