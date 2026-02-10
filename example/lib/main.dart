@@ -10,14 +10,16 @@ import 'theme_controller.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. Initialize storage and wait for it to complete
+  // CRITICAL: Initialize storage and WAIT for it to complete
+  // This ensures localStorage data is loaded before creating ThemeController
   await GetXStorage.init();
 
-  // 2. Create ThemeController and wait for it to load theme
-  final ThemeController themeController = Get.put(ThemeController());
+  // Create storage instance and ensure it's initialized
+  final storage = GetXStorage();
+  await storage.initStorage;
 
-  // 3. Wait a frame to ensure theme is loaded before building UI
-  await Future.delayed(Duration.zero);
+  // Now create ThemeController - it will have access to loaded data
+  final ThemeController themeController = Get.put(ThemeController());
 
   runApp(const MyApp());
 }

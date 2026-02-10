@@ -121,7 +121,7 @@ class WebStorage implements StorageBase {
 
   /// Writes a value to the storage for a given key.
   /// Updates the `subject` and persists the data in `localStorage`.
-  /// This implementation is optimized to avoid UI blocking.
+  /// This implementation ensures data is saved immediately for web.
   @override
   Future<void> write({required String key, required dynamic value}) async {
     // Create a new map with the updated value
@@ -130,20 +130,19 @@ class WebStorage implements StorageBase {
     // Update the in-memory data immediately
     subject.add(newData);
 
-    // Try to persist the data to localStorage in the background
-    Future.microtask(() {
-      try {
-        final localStorage = _localStorage;
-        if (localStorage != null) {
-          // Convert the entire data map to JSON and store it
-          final jsonData = json.encode(newData);
-          localStorage[fileName] = jsonData;
-        }
-      } catch (e) {
-        // Silently handle localStorage errors
-        // In-memory data is already updated, so the app will continue to work
+    // CRITICAL: For web, we need to save IMMEDIATELY, not in microtask
+    // Otherwise data might be lost when browser closes
+    try {
+      final localStorage = _localStorage;
+      if (localStorage != null) {
+        // Convert the entire data map to JSON and store it
+        final jsonData = json.encode(newData);
+        localStorage[fileName] = jsonData;
       }
-    });
+    } catch (e) {
+      // Silently handle localStorage errors
+      // In-memory data is already updated, so the app will continue to work
+    }
 
     // Return immediately for better responsiveness
     return Future.value();
@@ -151,7 +150,7 @@ class WebStorage implements StorageBase {
 
   /// Removes a value from the storage by its key.
   /// Updates the `subject` and persists the changes in `localStorage`.
-  /// This implementation is optimized for immediate UI updates.
+  /// This implementation ensures data is saved immediately for web.
   @override
   Future<void> remove({required String key}) async {
     // Create a new map without the removed key
@@ -160,19 +159,17 @@ class WebStorage implements StorageBase {
     // Update the in-memory data immediately
     subject.add(newData);
 
-    // Try to persist the changes to localStorage in the background
-    Future.microtask(() {
-      try {
-        final localStorage = _localStorage;
-        if (localStorage != null) {
-          // Convert the entire data map to JSON and store it
-          localStorage[fileName] = json.encode(newData);
-        }
-      } catch (e) {
-        // Silently handle localStorage errors
-        // In-memory data is already updated, so the app will continue to work
+    // CRITICAL: For web, we need to save IMMEDIATELY
+    try {
+      final localStorage = _localStorage;
+      if (localStorage != null) {
+        // Convert the entire data map to JSON and store it
+        localStorage[fileName] = json.encode(newData);
       }
-    });
+    } catch (e) {
+      // Silently handle localStorage errors
+      // In-memory data is already updated, so the app will continue to work
+    }
 
     // Return immediately for better responsiveness
     return Future.value();
@@ -180,25 +177,23 @@ class WebStorage implements StorageBase {
 
   /// Clears all data from the storage.
   /// Resets the `subject` to an empty map and removes the data from `localStorage`.
-  /// This implementation is optimized for immediate UI updates.
+  /// This implementation ensures data is saved immediately for web.
   @override
   Future<void> clear() async {
     // Reset the in-memory data to an empty map immediately
     subject.add({});
 
-    // Try to clear the data from localStorage in the background
-    Future.microtask(() {
-      try {
-        final localStorage = _localStorage;
-        if (localStorage != null) {
-          // Remove the entire entry from localStorage
-          localStorage.remove(fileName);
-        }
-      } catch (e) {
-        // Silently handle localStorage errors
-        // In-memory data is already cleared, so the app will continue to work
+    // CRITICAL: For web, we need to save IMMEDIATELY
+    try {
+      final localStorage = _localStorage;
+      if (localStorage != null) {
+        // Remove the entire entry from localStorage
+        localStorage.remove(fileName);
       }
-    });
+    } catch (e) {
+      // Silently handle localStorage errors
+      // In-memory data is already cleared, so the app will continue to work
+    }
 
     // Return immediately for better responsiveness
     return Future.value();
@@ -214,7 +209,7 @@ class WebStorage implements StorageBase {
 
   /// Updates the value of a specific key in the storage.
   /// Updates the `subject` and persists the changes in `localStorage`.
-  /// This implementation is optimized for immediate UI updates.
+  /// This implementation ensures data is saved immediately for web.
   @override
   void changeValueOfKey({required String key, required dynamic newValue}) {
     // Create a new map with the updated value
@@ -223,18 +218,17 @@ class WebStorage implements StorageBase {
     // Update the in-memory data immediately
     subject.add(newData);
 
-    // Try to persist the changes to localStorage in the background
-    Future.microtask(() {
-      try {
-        final localStorage = _localStorage;
-        if (localStorage != null) {
-          // Convert the entire data map to JSON and store it
-          localStorage[fileName] = json.encode(newData);
-        }
-      } catch (e) {
-        // Silently handle localStorage errors
-        // In-memory data is already updated, so the app will continue to work
+    // CRITICAL: For web, we need to save IMMEDIATELY
+    // Otherwise data might be lost when browser closes
+    try {
+      final localStorage = _localStorage;
+      if (localStorage != null) {
+        // Convert the entire data map to JSON and store it
+        localStorage[fileName] = json.encode(newData);
       }
-    });
+    } catch (e) {
+      // Silently handle localStorage errors
+      // In-memory data is already updated, so the app will continue to work
+    }
   }
 }
