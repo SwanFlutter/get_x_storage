@@ -5,16 +5,19 @@ import 'package:flutter/material.dart';
 import 'package:get_x_master/get_x_master.dart';
 import 'package:get_x_storage/get_x_storage.dart';
 
-import 'theme_controller.dart'; // فایل کنترلر خود را ایمپورت کنید
-// import 'app_bindings.dart'; // اگر بایندینگ دیگری دارید
+import 'theme_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. ابتدا استوریج را راه اندازی کنید
+  // 1. Initialize storage and wait for it to complete
   await GetXStorage.init();
 
+  // 2. Create ThemeController and wait for it to load theme
   final ThemeController themeController = Get.put(ThemeController());
+
+  // 3. Wait a frame to ensure theme is loaded before building UI
+  await Future.delayed(Duration.zero);
 
   runApp(const MyApp());
 }
@@ -24,17 +27,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // کنترلر قبلاً در main ساخته شده، اینجا فقط آن را پیدا می‌کنیم (اختیاری برای دسترسی)
     final ThemeController themeController = Get.find<ThemeController>();
 
     return Obx(
       () => GetMaterialApp(
         title: 'Flutter Demo',
-        // initialBinding: AppBindings(), // اگر بایندینگ‌های دیگر دارید
         theme: ThemeData.light(),
         darkTheme: ThemeData.dark(),
         themeMode: themeController.themeMode,
-
         home: const Screen(),
       ),
     );

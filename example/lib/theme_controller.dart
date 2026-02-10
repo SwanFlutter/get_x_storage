@@ -18,19 +18,27 @@ class ThemeController extends GetXController {
   }
 
   void _initTheme() {
-    bool initialTheme = _storage.read(key: _key) ?? false;
+    // Read the stored theme value SYNCHRONOUSLY to avoid flicker
+    // This is critical for web where localStorage is synchronous
+    final storedValue = _storage.read<bool>(key: _key);
+
+    // Use stored value if available, otherwise default to false (light mode)
+    final initialTheme = storedValue ?? false;
+
+    // Initialize the reactive variable
     isDarkMode = initialTheme.obs;
 
+    // Apply the theme immediately
     Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
   }
 
   void toggleTheme() {
     isDarkMode.value = !isDarkMode.value;
 
-    // تغییر تم در کل اپلیکیشن
+    // Change theme in the entire application
     Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
 
-    // ذخیره وضعیت جدید
+    // Save the new state
     _storage.write(key: _key, value: isDarkMode.value);
   }
 }

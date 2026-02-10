@@ -54,18 +54,29 @@ class WebStorage implements StorageBase {
   @override
   Future<void> init([Map<String, dynamic>? initialData]) async {
     try {
-      // Try to load data synchronously first for immediate access
-      Map<String, dynamic> loadedData = _loadDataSync() ?? {};
+      // CRITICAL: Load data synchronously FIRST to avoid UI flicker
+      final loadedData = _loadDataSync();
 
-      // Use initialData if provided, otherwise use loaded data
-      final dataToUse = initialData ?? loadedData;
+      // Determine which data to use
+      Map<String, dynamic> dataToUse;
 
-      // Update the subject with the data immediately
+      if (loadedData != null && loadedData.isNotEmpty) {
+        // Use loaded data from localStorage (highest priority)
+        dataToUse = loadedData;
+      } else if (initialData != null) {
+        // Use initial data if no stored data exists
+        dataToUse = initialData;
+      } else {
+        // Use empty map as fallback
+        dataToUse = {};
+      }
+
+      // Update the subject IMMEDIATELY with the correct data
       subject.add(dataToUse);
 
-      // If we have initial data and localStorage is available, save it
+      // If we have initial data but no stored data, save it in the background
       final localStorage = _localStorage;
-      if (initialData != null && localStorage != null) {
+      if (initialData != null && loadedData == null && localStorage != null) {
         // Save in the background to avoid blocking the UI
         Future.microtask(() {
           try {
